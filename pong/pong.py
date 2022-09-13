@@ -29,8 +29,8 @@ class Ball:
     def game_restart(self):
         self.pos_x = SCREEN_WIDTH / 2 - 10
         self.pos_y = SCREEN_HEIGHT / 2 - 10
-        self.ball_speed_x = random.randint(0, 5)
-        self.ball_speed_y = random.randint(0, 5)
+        self.ball_speed_x = random.randint(1, 5)
+        self.ball_speed_y = random.randint(1, 5)
 
         
 
@@ -55,11 +55,13 @@ class Block:
 
 class Game:
     def __init__(self):
+        self.game_start = False
         self.ball = Ball()
         self.player = Block(10)
         self.opponent = Block(SCREEN_WIDTH - 15)
 
     def draw_elements(self,screen):
+        pygame.draw.aaline(screen,(161,161,161), (SCREEN_WIDTH/2,0), (SCREEN_WIDTH/2, SCREEN_HEIGHT))
         self.get_collision()
         self.opponent_ai()
         self.ball.draw_ball(screen)
@@ -72,9 +74,16 @@ class Game:
 
     def opponent_ai(self):
         if self.opponent.block_rect.top < self.ball.pos_y:
-            self.opponent.block_speed = 4
+            self.opponent.block_speed = 3
         if self.opponent.block_rect.bottom > self.ball.pos_y:
-            self.opponent.block_speed = -4
+            self.opponent.block_speed = -3
+
+    def start_screen(self,screen):
+        font = pygame.font.Font(None, 30)
+        font_surf = font.render('Press any key to start...', False, pygame.Color('#ABB2BF'))
+        font_rect = font_surf.get_rect(midbottom = (320,240))
+        screen.blit(font_surf, font_rect)
+
 
 
 def main():
@@ -86,11 +95,13 @@ def main():
 
     while True:
         screen.fill((31,31,31))
-        pygame.draw.aaline(screen,(161,161,161), (SCREEN_WIDTH/2,0), (SCREEN_WIDTH/2, SCREEN_HEIGHT))
         for event in pygame.event.get():
             if event.type == pygame.QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
                 pygame.quit()
                 sys.exit()
+            if not game.game_start:
+                if event.type == KEYDOWN:
+                    game.game_start = True
             if event.type == KEYDOWN:
                 if event.key == K_UP:
                     game.player.block_speed -= 5
@@ -102,7 +113,11 @@ def main():
                 if event.key == K_DOWN:
                     game.player.block_speed -= 5
         
-        game.draw_elements(screen)
+        if game.game_start:
+            game.draw_elements(screen)
+        else:
+            game.start_screen(screen)
+
 
         pygame.display.update()
         clock.tick(60)
